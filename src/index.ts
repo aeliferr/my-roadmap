@@ -1,16 +1,102 @@
+import cors from 'cors'
 import express from 'express'
-import { TrailController } from './modules/trail/TrailController'
+import { Permission, Prisma, PrismaClient, Route } from '@prisma/client'
+import listEndpoints from 'express-list-endpoints'
+import trailRouter from './modules/trail/routes'
+import roleRouter from './modules/role/routes'
+import { prisma } from '../prisma'
 
 const app = express()
 
+app.use(cors())
 app.use(express.json())
 
-app.get('/trails/:id', TrailController.get)
+app.use('/roles', roleRouter)
+app.use('/trails', trailRouter)
 
-app.post('/trails', TrailController.post)
-app.put('/trails/:id', TrailController.put)
-app.delete('/trails/:id', TrailController.delete)
+app.listen(4000, async () => {
+  const routes = listEndpoints(app) 
+  const normalizedRoutes: Route[] = []
+  
+  routes.forEach(route => {
+    if (route.methods.length > 1) {
+      route.methods.forEach(method => {
+        normalizedRoutes.push({
+          description: route.path,
+          method: method
+        } as Route)
+      })
+    } else {
+      normalizedRoutes.push({
+        description: route.path,
+        method: route.methods[0]
+      } as Route)
+    }
+  })
 
-app.listen(3000, () => {
-  console.log('Running')
+  const x = new PrismaClient()
+  const y = await x.route.findMany()
+  const persistedRoutes = await prisma.route.findMany()
+
+  const routesToRemove: Route[] = []
+
+  if (persistedRoutes) {
+    persistedRoutes.forEach(persistedRoute => {
+      const routeIndex = normalizedRoutes.findIndex(x => x.description === persistedRoute.description && x.method === persistedRoute.method)
+  
+      if (routeIndex === -1) {
+        routesToRemove.push(persistedRoute) 
+      } else {
+        normalizedRoutes.splice(routeIndex, 1)
+      }
+    })
+  
+    await prisma.route.deleteMany({
+      where: {
+        id: {
+          in: routesToRemove.map(routes => routes.id)
+        }
+      }
+    })  
+  }
+
+  await prisma.$transaction(async txClient => {
+    await addPermissions(txClient, normalizedRoutes)
+  })
+  
+  console.log('running')
 })
+
+async function addPermissions(txClient: Prisma.TransactionClient, routes: Route[]) {
+  const createdRoutes: Route[] = []
+
+  for (let index = 0; index < routes.length; index++) {
+    const route = routes[index];
+
+    const createdRoute = await txClient.route.create({
+      data: route
+    })
+
+    createdRoutes.push(createdRoute)
+  }
+
+  const roles = await txClient.role.findMany()
+
+  if (roles) {
+    for (let index = 0; index < roles.length; index++) {
+      const roleId = roles[index].id;
+      const permissionsToCreate = createdRoutes.map(route => {
+        return {
+          roleId,
+          routeId: route.id
+        } as Permission
+      })
+  
+      await txClient.permission.createMany({
+        data: permissionsToCreate
+      })
+    }  
+  }
+}
+
+export { app }

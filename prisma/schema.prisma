@@ -10,7 +10,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Trails {
-  id String @db.Uuid @unique @id
-  description String @db.VarChar(80)
+model Trail {
+  id          String   @id @unique @db.Uuid
+  description String   @db.VarChar(80)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("trails")
+}
+
+model Route {
+  id          String       @id @unique @db.Uuid
+  description String       @db.VarChar(120)
+  method      String       @db.VarChar(10)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime?    @updatedAt
+  Permission  Permission[]
+
+  @@unique([description, method])
+  @@map("routes")
+}
+
+model Role {
+  id          String       @id @unique @db.Uuid
+  description String       @db.VarChar(30)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  Permission  Permission[]
+
+  @@unique([description])
+  @@map("roles")
+}
+
+model Permission {
+  id      String @id @unique @db.Uuid
+  role    Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  route   Route  @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  roleId  String @db.Uuid
+  routeId String @db.Uuid
+
+  @@map("permissions")
 }
