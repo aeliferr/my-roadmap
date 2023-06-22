@@ -1,6 +1,8 @@
 import { Permission, Role } from "@prisma/client";
 import { Request, Response } from "express";
 import { prisma } from '../../../prisma'
+import { PrismaRoleRepository } from "./repositories/prisma/PrismaRoleRepository";
+import { CreateRole } from "./useCases/create-role";
 
 export class RoleController {
   static async get(request: Request, response: Response) {
@@ -13,7 +15,15 @@ export class RoleController {
     const { description } = request.body
     const { fullAccess } = request.query
     
+    const createRole = new CreateRole(new PrismaRoleRepository())
+
+    if (fullAccess === 'true') {
+      
+    }
+    const role = createRole.execute({ description } as Role)
+
     const entity = await prisma.$transaction(async txClient => {
+      
       const entity = await txClient.role.create({
         data: {
           description: description

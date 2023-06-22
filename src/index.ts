@@ -34,8 +34,6 @@ app.listen(4000, async () => {
     }
   })
 
-  const x = new PrismaClient()
-  const y = await x.route.findMany()
   const persistedRoutes = await prisma.route.findMany()
 
   const routesToRemove: Route[] = []
