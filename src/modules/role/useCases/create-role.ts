@@ -1,15 +1,16 @@
-import { Prisma, Role } from "@prisma/client";
-import { RoleRepository } from "../repositories/IRroleRepository";
 import { z } from 'zod'
+import { CreateRole } from '../DTOs/CreateRole'
+import { Role } from '../entities/Role'
+import { CreateRoleRepository } from '../repositories/create-role-repository'
 
-export class CreateRole {
+export class CreateRoleUseCase {
   /**
    *
    */
-  constructor(private roleRepository: RoleRepository<Prisma.RoleFindManyArgs>) {
+  constructor(private roleRepository: CreateRoleRepository) {
   }
 
-  async execute(entity: Role): Promise<Role> {
+  async execute(entity: CreateRole): Promise<Role> {
     const roleSchemaValidator = z.object({
       description: z.string({
         description: 'The role description',
@@ -23,8 +24,8 @@ export class CreateRole {
       throw error
     }
 
-    entity = await this.roleRepository.create(entity)
+    const role = await this.roleRepository.execute(entity)
 
-    return entity
+    return role
   }
 }

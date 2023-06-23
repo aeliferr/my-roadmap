@@ -2,12 +2,13 @@ import { Permission, Prisma, Role, Route } from "@prisma/client";
 import { RoleRepository } from "../repositories/IRroleRepository";
 import { z } from 'zod'
 import { RouteRepository } from "../../routes/repositories/IRouteRepository";
+import { CreateFullAccessRoleRepository } from "../repositories/create-full-access-role-repository copy";
 
 export class CreateFullAccessRole {
   /**
    *
    */
-  constructor(private roleRepository: RoleRepository, private routeRepository: RouteRepository) {
+  constructor(private createFullAccessRoleRepository: CreateFullAccessRoleRepository, private routeRepository: RouteRepository) {
   }
 
   async execute(entity: Role): Promise<Role> {
@@ -23,10 +24,8 @@ export class CreateFullAccessRole {
     } catch (error) {
       throw error
     }
-
-    type x = keyof Route
-    type s = x["id"] 
-    const routes = await this.routeRepository.findMany("id", '')
+    
+    const routes = await this.routeRepository.findMany(['id'])
 
     const permissions = routes.map(route => {
       return {
@@ -34,16 +33,7 @@ export class CreateFullAccessRole {
       } as Permission
     })
 
-    entity = await this.roleRepository.create({
-      data: {
-        ...entity,
-        Permission: {
-          createMany: {
-            data: permissions
-          }
-        }
-      }
-    })
+    entity = await this.roleRepository.create(entity, permissions)
 
     return entity
   }
