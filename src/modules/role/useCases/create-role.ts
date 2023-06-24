@@ -3,7 +3,7 @@ import { CreateRoleDTO} from '../DTOs/create-role-dto'
 import { Role } from '../entities/Role'
 import { CreateRoleRepository } from '../repositories/create-role-repository'
 
-export class CreateRoleUseCase {
+export class CreateRole {
   /**
    *
    */
