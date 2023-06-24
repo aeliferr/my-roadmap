@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CreateRole } from '../DTOs/CreateRole'
+import { CreateRoleDTO} from '../DTOs/create-role-dto'
 import { Role } from '../entities/Role'
 import { CreateRoleRepository } from '../repositories/create-role-repository'
 
@@ -10,7 +10,7 @@ export class CreateRoleUseCase {
   constructor(private roleRepository: CreateRoleRepository) {
   }
 
-  async execute(entity: CreateRole): Promise<Role> {
+  async execute(entity: CreateRoleDTO): Promise<Role> {
     const roleSchemaValidator = z.object({
       description: z.string({
         description: 'The role description',
