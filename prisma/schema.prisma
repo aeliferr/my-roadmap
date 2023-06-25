@@ -32,11 +32,12 @@ model Route {
 }
 
 model Role {
-  id          String       @id @unique @db.Uuid
-  description String       @db.VarChar(30)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  Permission  Permission[]
+  id          String   @id @unique @db.Uuid
+  description String   @db.VarChar(30)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Permission Permission[]
 
   @@unique([description])
   @@map("roles")

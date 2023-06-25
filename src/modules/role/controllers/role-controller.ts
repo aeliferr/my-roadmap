@@ -1,4 +1,7 @@
-import { Request, Response } from "express";
+import { ZodError } from "zod";
+import { HttpRequest } from "../../../common/http-request";
+import { HttpResponse, HttpResponseObject } from "../../../common/http-response";
+import { Role } from "../entities/Role";
 import { CreateRole } from "../useCases/create-role";
 
 export class RoleController {
@@ -9,16 +12,20 @@ export class RoleController {
     
   }
   
-  async post(req: Request, res: Response) {
+  async post(httpRequest: HttpRequest): Promise<HttpResponseObject<Role | ZodError | Error>> {
     try {
-      const { description } = req.body
+      const { description } = httpRequest.body
       
       const role = await this.createRole.execute({ description })
 
-      res.json(role)
+      return HttpResponse.ok(role)
     } catch (error) {
+      if (error instanceof ZodError) {
+        return HttpResponse.badRequest(error)
+      }
+
       console.log(error)
-      res.json(error)
+      return HttpResponse.serverError(error as Error)
     }
   }
 }
