@@ -5,7 +5,10 @@
   "license": "MIT",
   "scripts": {
     "start": "clear && ts-node-dev 'src/index.ts'",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test": "yarn vitest --silent",
+    "test:husky": "yarn vitest run --silent",
+    "test:dev": "yarn test --"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.0.2",

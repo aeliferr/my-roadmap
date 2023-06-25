@@ -1,15 +1,6 @@
-export type TrailProps = {
+export class Trail {
   id: string
   description: string
-}
-
-export class Trail {
-  /**
-   *
-   */
-  constructor(props: TrailProps) {
-    this.props = props
-  }
-
-  props: TrailProps
+  createdAt: Date
+  updatedAt?: Date
 }

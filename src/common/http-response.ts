@@ -1,7 +1,7 @@
 export type HttpResponseObject<T> = { statusCode: number, body: T}
 
 export class HttpResponse {
-  static ok<T>(data: T): HttpResponseObject<T> {
+  static ok<T>(data: T | undefined = undefined): HttpResponseObject<T> {
     return {
       statusCode: 200,
       body: data
